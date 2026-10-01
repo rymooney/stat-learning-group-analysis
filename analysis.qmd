@@ -4,3 +4,9 @@ format: html
 author: "Ryan and Veronica"
 ---
 
+```{r}
+hallucination_cases <- read.csv("hallucination_cases.csv")
+head(hallucination_cases)
+```
+
+
