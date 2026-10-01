@@ -7,7 +7,58 @@ Github repository: [View our GitHub repository](https://github.com/rymooney/stat
 
 ```{r}
 hallucination_cases <- read.csv("hallucination_cases.csv")
-head(hallucination_cases)
 ```
 
+```{r}
+library(dplyr)
+library(stringr)
+library(tidyr)
+library(ggplot2)
+```
+
+The `Professional.Sanction` variable describes if a professional sanction, official penalties or disciplinary measures imposed on a licensed worker for an ethical violation, was given. I am curious if having a misrepresented hallucination in the case correlates with an increase in a professional sanction being issued.
+```{r}
+analysis_data <- hallucination_cases |>
+  mutate(
+    misrepresented = str_detect(
+      `Hallucination.Items`,
+      regex("Misrepresented:", ignore_case = TRUE)
+    )
+  )
+
+ggplot(analysis_data, aes(x = misrepresented, fill = `Professional.Sanction`)) +
+  geom_bar(position = "fill") +
+  labs(
+    x = "Misrepresented Hallucination",
+    y = "Proportion of Cases",
+    fill = "Professional Sanction"
+  ) +
+  scale_x_discrete(labels = c("FALSE" = "No", "TRUE" = "Yes")) +
+  theme_minimal()
+```
+This gives the proportion of cases receiving a professional sanction among cases with and without a misrepresented hallucination.
+
+Since Professional Sanction is a binary response variable, we can perform logistic regression.
+
+```{r}
+analysis_data <- analysis_data |>
+  mutate(
+    sanction = if_else(`Professional.Sanction` == "Yes", 1, 0)
+  )
+
+model <- glm(
+  sanction ~ misrepresented,
+  data = analysis_data,
+  family = binomial
+)
+
+summary(model)
+```
+
+Because logistic regression coefficients are in log-odds, exponentiating the coefficient gives the odds ratio. 
+```{r}
+exp(0.5532)
+```
+
+The logistic regression estimated that cases with a misrepresented hallucination had 1.74 times the odds of receiving a professional sanction compared with cases without one ($\beta_1$ = 0.5532, p = 0.000746). A logistic regression model is appropriate because the response variable, `Professional.Sanction`, is binary, and logistic regression is designed to model the probability of a binary outcome based on the predictor variables. A limitation is that the model only includes whether a case contained a misrepresented hallucination and does not account for other factors  such as the severity or number of hallucinations, the type of  proceeding, or other potentially significant explanatory variables.
 
