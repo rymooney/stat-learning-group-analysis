@@ -1,8 +1,9 @@
 ---
 title: "analysis"
 format: html
-author: "Ryan and Veronica"
+author: "Group Members: Ryan and Veronica"
 ---
+Github repository: (View our GitHub repository)[https://github.com/rymooney/stat-learning-group-analysis]
 
 ```{r}
 hallucination_cases <- read.csv("hallucination_cases.csv")
