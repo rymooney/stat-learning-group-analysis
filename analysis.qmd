@@ -1,6 +1,6 @@
 ---
 title: "analysis"
-format: html
+format: pdf
 author: "Group Members: Ryan and Veronica"
 ---
 Github repository: (View our GitHub repository)[https://github.com/rymooney/stat-learning-group-analysis]
