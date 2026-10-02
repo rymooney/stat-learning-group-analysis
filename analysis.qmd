@@ -15,16 +15,70 @@ library(stringr)
 library(tidyr)
 library(ggplot2)
 ```
+For the data exploration, we wanted to examine the differences in professional sanction issued between hallucination items: fabricated, false quotes, and misrepresented.
 
-The `Professional.Sanction` variable describes if a professional sanction, official penalties or disciplinary measures imposed on a licensed worker for an ethical violation, was given. I am curious if having a misrepresented hallucination in the case correlates with an increase in a professional sanction being issued.
+The `Professional.Sanction` variable describes if a professional sanction, official penalties or disciplinary measures imposed on a licensed worker for an ethical violation, was given.
+
+```{r}
+analyze <- hallucination_cases |>
+  mutate(hallucination = case_when(
+    str_detect(`Hallucination.Items`, "Misrepresented:") ~ "Misrepresented",
+    str_detect(`Hallucination.Items`, "False Quotes:") ~ "False Quotes",
+    str_detect(`Hallucination.Items`, "Fabricated:") ~ "Fabricated"),
+)
+
+analyze <- na.omit(analyze)
+
+analyze |>
+  ggplot(aes(x = Professional.Sanction)) +
+  geom_bar()+
+  facet_grid(~hallucination) +
+  labs(
+    x = "Professional Sanction Decision",
+    y = "Proportion"
+  )
+
+```
+
+
+
 ```{r}
 analysis_data <- hallucination_cases |>
   mutate(
     misrepresented = str_detect(
       `Hallucination.Items`,
       regex("Misrepresented:", ignore_case = TRUE)
+    ),
+    false_quote = str_detect(
+      `Hallucination.Items`,
+      regex("False Quotes:", ignore_case = TRUE)
+    ),
+    fabricated = str_detect(
+      `Hallucination.Items`,
+      regex("Fabricated:", ignore_case = TRUE)
     )
   )
+
+ggplot(analysis_data, aes(x = false_quote, fill = `Professional.Sanction`)) +
+  geom_bar(position = "fill") +
+  labs(
+    x = "False Quotes Hallucination",
+    y = "Proportion of Cases",
+    fill = "Professional Sanction"
+  ) +
+  scale_x_discrete(labels = c("FALSE" = "No", "TRUE" = "Yes")) +
+  theme_minimal()
+
+ggplot(analysis_data, aes(x = fabricated, fill = `Professional.Sanction`)) +
+  geom_bar(position = "fill") +
+  labs(
+    x = "Fabricated Hallucination",
+    y = "Proportion of Cases",
+    fill = "Professional Sanction"
+  ) +
+  scale_x_discrete(labels = c("FALSE" = "No", "TRUE" = "Yes")) +
+  theme_minimal()
+
 
 ggplot(analysis_data, aes(x = misrepresented, fill = `Professional.Sanction`)) +
   geom_bar(position = "fill") +
@@ -35,9 +89,12 @@ ggplot(analysis_data, aes(x = misrepresented, fill = `Professional.Sanction`)) +
   ) +
   scale_x_discrete(labels = c("FALSE" = "No", "TRUE" = "Yes")) +
   theme_minimal()
-```
-This gives the proportion of cases receiving a professional sanction among cases with and without a misrepresented hallucination.
 
+
+```
+This gives the proportion of cases receiving a professional sanction among cases with and without a false quote, a fabricated, and a misrepresented hallucinations. We can see that the proportion of those issued a professional sanction is quite small across the hallucination items.
+
+I am curious if having a misrepresented hallucination in the case correlates with an increase in a professional sanction being issued.
 Since Professional Sanction is a binary response variable, we can perform logistic regression.
 
 ```{r}
